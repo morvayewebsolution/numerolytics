@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numerolytics Pro — Vedic Numerology Report Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Sans+Devanagari:wght@400;600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --gold:#8a5a00; --gold-light:#c99a3f; --cream:#fffdf7; --paper:#faf3e3;
+    --ink:#2b2210; --line:#e0d4b8; --danger:#a3312a;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Poppins','Noto Sans Devanagari',Georgia,serif;background:var(--paper);color:var(--ink);}
+  h1,h2,.brand{font-family:'Playfair Display','Noto Sans Devanagari',Georgia,serif;}
+  header{background:linear-gradient(135deg,#3a2a0a,#1f1605);color:#f5e9c9;padding:22px 16px;text-align:center;}
+  header h1{margin:0;font-size:1.5rem;letter-spacing:1px;}
+  header p{margin:4px 0 0;font-size:.85rem;color:#c9b98a;}
+  .wrap{max-width:680px;margin:0 auto;padding:16px;}
+  .card{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  label{display:block;font-size:.85rem;margin:12px 0 4px;font-weight:bold;color:#5a4620;}
+  input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;font-size:1rem;font-family:inherit;background:#fff;}
+  button{cursor:pointer;border:none;border-radius:6px;font-size:1rem;padding:12px 18px;font-family:inherit;}
+  .btn-primary{background:var(--gold);color:#fff;width:100%;margin-top:16px;}
+  .btn-primary:hover{background:#734a00;}
+  .btn-secondary{background:#2b2210;color:#f5e9c9;width:100%;margin-top:10px;}
+  .error{color:var(--danger);font-size:.85rem;margin-top:8px;display:none;}
+  .hidden{display:none !important;}
+  h2{color:var(--gold);font-size:1.15rem;border-bottom:2px solid var(--line);padding-bottom:6px;margin-top:26px;}
+  h3{color:#5a4620;font-size:.95rem;margin:14px 0 4px;}
+  .num-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+  .num-box{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center;}
+  .num-box .val{font-size:2rem;font-weight:bold;color:var(--gold);}
+  .num-box .lbl{font-size:.75rem;color:#5a4620;}
+  .loshu{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:220px;margin:14px auto;}
+  .loshu div{background:var(--paper);border:1px solid var(--line);text-align:center;padding:14px 0;font-size:1.1rem;font-weight:bold;border-radius:4px;}
+  .desc{font-size:.9rem;line-height:1.6;margin:6px 0 14px;}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;margin:10px 0;}
+  td,th{border:1px solid var(--line);padding:6px 8px;text-align:left;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:#5a4620;}
+  .logout{cursor:pointer;color:var(--danger);text-decoration:underline;}
+  footer{text-align:center;font-size:.75rem;color:#8a7a50;padding:20px;}
+  .lang-block{margin-bottom:10px;}
+  .lang-tag{display:inline-block;background:var(--gold);color:#fff;font-size:.7rem;padding:2px 10px;border-radius:10px;margin:18px 0 4px;}
+  .section-divider{border:none;border-top:2px dashed var(--line);margin:24px 0;}
+  #reportPrintArea{background:var(--cream);}
+  .cover{text-align:center;padding:30px 0 26px;border:2px solid var(--gold-light);border-radius:10px;background:linear-gradient(180deg,#fdf6e3,#faf3e3);margin-bottom:10px;}
+  .cover .om{font-size:2.4rem;color:var(--gold);}
+  .cover .brand{font-size:1.6rem;color:var(--gold);font-weight:bold;margin-top:6px;}
+  .cover .sub{font-size:.9rem;color:#8a7a50;margin-top:2px;}
+  .cover .preparedFor{font-size:.85rem;margin-top:18px;color:var(--ink);}
+  .cover .genDate{font-size:.75rem;color:#8a7a50;margin-top:4px;}
+  .toc{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:.8rem;margin:16px 0;}
+  .toc ol{margin:6px 0 0;padding-left:20px;}
+  .toc li{margin:2px 0;}
+  .barchart{display:flex;align-items:flex-end;gap:6px;height:110px;margin:14px 0 4px;padding:0 4px;}
+  .bar-col{flex:1;text-align:center;display:flex;flex-direction:column;justify-content:flex-end;height:100%;}
+  .bar{background:var(--gold);border-radius:3px 3px 0 0;min-height:2px;}
+  .bar-label{font-size:.7rem;margin-top:4px;color:#5a4620;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin:14px 0 4px;}
+  .checkbox-row input[type="checkbox"]{width:auto;}
+  .checkbox-row label{margin:0;}
+  .loading{text-align:center;padding:10px;font-size:.85rem;color:#5a4620;display:none;}
+  .mini-tool{margin-top:8px;}
+  .mini-result{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:10px;font-size:.85rem;display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔯 Numerolytics Pro</h1>
+  <p>Vedic &amp; Chaldean Numerology Report Generator</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ LOGIN SCREEN ============ -->
+  <div class="card" id="loginCard">
+    <h2 style="margin-top:0">Login</h2>
+    <label>Login ID</label>
+    <input type="text" id="loginId" placeholder="e.g. NL123456" autocomplete="off">
+    <label>Password</label>
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="btn-primary" onclick="doLogin()">Login</button>
+    <div class="error" id="loginError">Invalid ID or password. Please check the email we sent you.</div>
+  </div>
+
+  <!-- ============ INPUT FORM ============ -->
+  <div class="card hidden" id="formCard">
+    <div class="topbar">
+      <span id="welcomeMsg"></span>
+      <span class="logout" onclick="logout()">Logout</span>
+    </div>
+    <h2 style="margin-top:10px">Generate Your Report</h2>
+    <label>Full Name (as commonly used)</label>
+    <input type="text" id="fullName" placeholder="e.g. Rohit Sharma">
+    <label>Date of Birth</label>
+    <input type="date" id="dob">
+    <label>Gender (for Kua Number)</label>
+    <select id="gender">
+      <option value="male">Male</option>
+      <option value="female">Female</option>
+    </select>
+    <label>Report Language / रिपोर्ट भाषा</label>
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="hi">हिंदी (Hindi)</option>
+      <option value="both">Both / दोनों</option>
+    </select>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="includePartner" onchange="document.getElementById('partnerFields').classList.toggle('hidden', !this.checked)">
+      <label for="includePartner">Add partner details for compatibility (optional)</label>
+    </div>
+    <div class="hidden" id="partnerFields">
+      <label>Partner's Full Name</label>
+      <input type="text" id="partnerName" placeholder="e.g. Priya Verma">
+      <label>Partner's Date of Birth</label>
+      <input type="date" id="partnerDob">
+    </div>
+
+    <button class="btn-primary" onclick="generateReport()">Generate Report</button>
+  </div>
+
+  <!-- ============ MINI TOOL: NAME NUMBER CHECKER ============ -->
+  <div class="card hidden" id="nameCheckCard">
+    <h2 style="margin-top:0">Name Number Checker</h2>
+    <p class="desc" style="margin-top:0">Testing baby names or a name change? Type any name to instantly see its numerology number and meaning. This checks names you enter — it doesn't generate a list of names on its own.</p>
+    <div class="mini-tool">
+      <input type="text" id="checkName" placeholder="Type a name to check">
+      <button class="btn-secondary" onclick="checkNameNumber()" style="margin-top:8px;">Check Name Number</button>
+      <div class="mini-result" id="nameCheckResult"></div>
+    </div>
+  </div>
+
+  <!-- ============ REPORT OUTPUT ============ -->
+  <div class="card hidden" id="reportCard">
+    <div id="reportPrintArea"></div>
+  </div>
+
+  <div class="loading" id="pdfLoading">Preparing your PDF… please wait</div>
+
+  <div class="hidden" id="pdfBtnWrap" style="text-align:center;margin-bottom:20px;">
+    <button class="btn-secondary" onclick="downloadPDF()">⬇ Download PDF Report</button>
+    <button class="btn-secondary" onclick="newReport()">Generate Another Report</button>
+  </div>
+
+</div>
+
+<footer>Numerolytics.in — Vedic Numerology, Reimagined. All readings are for self-reflection and traditional interpretation purposes.</footer>
+
+<script>
+/* ================= CONFIG ================= */
+const GAS_URL = "PUT_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"; // ends in /exec
+/* ============================================ */
+
+let currentReport = null;
+
+/* ---------- LOGIN ---------- */
+async function doLogin(){
+  const id = document.getElementById('loginId').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const errBox = document.getElementById('loginError');
+  errBox.style.display = 'none';
+  if(!id || !pass){ errBox.textContent = "Please enter both ID and password."; errBox.style.display='block'; return; }
+  try{
+    const res = await fetch(`${GAS_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`);
+    const data = await res.json();
+    if(data.status === 'success'){
+      localStorage.setItem('nl_id', id);
+      localStorage.setItem('nl_pass', pass);
+      localStorage.setItem('nl_name', data.name || '');
+      showForm(data.name);
+    } else { errBox.style.display = 'block'; }
+  }catch(err){
+    errBox.textContent = "Could not reach login server. Check your internet connection.";
+    errBox.style.display = 'block';
+  }
+}
+function showForm(name){
+  document.getElementById('loginCard').classList.add('hidden');
+  document.getElementById('formCard').classList.remove('hidden');
+  document.getElementById('nameCheckCard').classList.remove('hidden');
+  document.getElementById('welcomeMsg').textContent = name ? `Welcome, ${name}` : '';
+}
+function logout(){
+  localStorage.removeItem('nl_id'); localStorage.removeItem('nl_pass'); localStorage.removeItem('nl_name');
+  location.reload();
+}
+window.onload = async function(){
+  const id = localStorage.getItem('nl_id'); const pass = localStorage.getItem('nl_pass');
+  if(id && pass){
+    try{
+      const res = await fetch(`${GAS_URL}?action=login&id=${encodeURIComponent(id)}&pass=${encodeURIComponent(pass)}`);
+      const data = await res.json();
+      if(data.status === 'success') showForm(data.name);
+    }catch(e){}
+  }
+};
+
+/* ---------- CORE CALCULATIONS ---------- */
+function reduceNum(n){ n = Math.abs(n); while(n > 9){ n = String(n).split('').reduce((a,b)=>a+Number(b),0); } return n; }
+const CHALDEAN = {A:1,I:1,J:1,Q:1,Y:1,B:2,K:2,R:2,C:3,G:3,L:3,S:3,D:4,M:4,T:4,E:5,H:5,N:5,X:5,U:6,V:6,W:6,O:7,Z:7,F:8,P:8};
+function mulank(day){ return reduceNum(day); }
+function bhagyank(day,month,year){ const digits = `${day}${month}${year}`.split('').map(Number).reduce((a,b)=>a+b,0); return reduceNum(digits); }
+function namankRaw(name){ const letters = name.toUpperCase().replace(/[^A-Z]/g,''); let sum=0; for(const ch of letters){ sum += CHALDEAN[ch]||0; } return sum; }
+function namank(name){ return reduceNum(namankRaw(name)); }
+function kuaNumber(year, gender){
+  const yy = year % 100; const x = reduceNum(yy === 0 ? year : yy);
+  let kua = year >= 2000 ? (gender==='male'?9-x:x+6) : (gender==='male'?10-x:x+5);
+  if(kua>9) kua = reduceNum(kua);
+  if(kua===0) kua = 9;
+  if(kua===5) kua = gender==='male'?2:8;
+  return kua;
+}
+function personalYear(day, month, currentYear){ return reduceNum(day+month+currentYear); }
+function loshuGrid(day, month, year){
+  const digitsStr = `${day}${month}${year}`.replace(/0/g,'');
+  const counts = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+  for(const ch of digitsStr){ counts[Number(ch)]++; }
+  return counts;
+}
+const PLANET_OF = {1:'Sun',2:'Moon',3:'Jupiter',4:'Rahu',5:'Mercury',6:'Venus',7:'Ketu',8:'Saturn',9:'Mars'};
+const PLANET_HI = {Sun:'सूर्य',Moon:'चंद्रमा',Jupiter:'बृहस्पति',Rahu:'राहु',Mercury:'बुध',Venus:'शुक्र',Ketu:'केतु',Saturn:'शनि',Mars:'मंगल'};
+const NUM_OF_PLANET = {Sun:1,Moon:2,Jupiter:3,Rahu:4,Mercury:5,Venus:6,Ketu:7,Saturn:8,Mars:9};
+const FRIENDSHIP = {
+  Sun:{friends:['Moon','Mars','Jupiter'],enemies:['Venus','Saturn'],neutral:['Mercury']},
+  Moon:{friends:['Sun','Mercury'],enemies:[],neutral:['Mars','Jupiter','Venus','Saturn']},
+  Mars:{friends:['Sun','Moon','Jupiter'],enemies:['Mercury'],neutral:['Venus','Saturn']},
+  Mercury:{friends:['Sun','Venus'],enemies:['Moon'],neutral:['Mars','Jupiter','Saturn']},
+  Jupiter:{friends:['Sun','Moon','Mars'],enemies:['Mercury','Venus'],neutral:['Saturn']},
+  Venus:{friends:['Mercury','Saturn'],enemies:['Sun','Moon'],neutral:['Mars','Jupiter']},
+  Saturn:{friends:['Mercury','Venus'],enemies:['Sun','Moon','Mars'],neutral:['Jupiter']},
+  Rahu:{friends:['Mercury','Venus','Saturn'],enemies:['Sun','Moon','Mars'],neutral:['Jupiter']},
+  Ketu:{friends:['Sun','Moon','Jupiter'],enemies:['Mercury','Venus'],neutral:['Saturn']}
+};
+function friendNumbers(mulankNum){
+  const planet = PLANET_OF[mulankNum]; const f = FRIENDSHIP[planet];
+  const toNums = arr => arr.map(p=>NUM_OF_PLANET[p]);
+  return { friends: toNums(f.friends), enemies: toNums(f.enemies), neutral: toNums(f.neutral) };
+}
+
+/* ---------- BILINGUAL CONTENT BANK (Numbers 1-9) ---------- */
+const TRAITS = {
+1:{color:{en:'Gold, Orange',hi:'सुनहरा, नारंगी'},day:{en:'Sunday',hi:'रविवार'},gem:{en:'Ruby',hi:'माणिक्य (रूबी)'},
+  personality:{en:"You are a natural leader—independent, confident, and driven by strong willpower. You prefer to originate ideas rather than follow others.",hi:"आप एक स्वाभाविक नेता हैं—स्वतंत्र, आत्मविश्वासी और दृढ़ इच्छाशक्ति से प्रेरित। आप दूसरों का अनुसरण करने के बजाय स्वयं विचार उत्पन्न करना पसंद करते हैं।"},
+  career:{en:"You thrive in leadership roles, entrepreneurship, and administration—any field where you can be your own authority. Government service and politics also suit Sun-ruled natives well.",hi:"आप नेतृत्व की भूमिकाओं, उद्यमिता और प्रशासन में फलते-फूलते हैं। सरकारी सेवा और राजनीति भी सूर्य-प्रधान व्यक्तियों के लिए उपयुक्त है।"},
+  relationships:{en:"You seek respect and admiration in relationships more than dependency. You do best with a partner who supports your ambitions without competing for control.",hi:"रिश्तों में आप निर्भरता से अधिक सम्मान और प्रशंसा चाहते हैं। ऐसा साथी जो नियंत्रण के लिए प्रतिस्पर्धा किए बिना आपकी महत्वाकांक्षाओं का समर्थन करे, आपके लिए सर्वोत्तम है।"},
+  health:{en:"Vitality is generally strong, but watch for heart, eyes, and blood-pressure related stress caused by overwork or ego conflicts.",hi:"जीवनशक्ति सामान्यतः प्रबल रहती है, परंतु अत्यधिक कार्य या अहंकार-संघर्ष से उत्पन्न हृदय, नेत्र और रक्तचाप संबंधी तनाव से सावधान रहें।"},
+  finance:{en:"Money flows through authority, position, or self-owned ventures. Avoid impulsive risk-taking driven by pride.",hi:"धन अधिकार, पद या स्वयं के उद्यम के माध्यम से प्राप्त होता है। अहंकार से प्रेरित जोखिम लेने से बचें।"},
+  pastLife:{en:"In past-life terms, Number 1 often carries karma of having held positions of power—this life brings a chance to lead with humility rather than dominance.",hi:"पूर्वजन्म की दृष्टि से, अंक 1 प्रायः सत्ता के पदों पर रहने का कर्म साथ लाता है—यह जीवन प्रभुत्व के बजाय विनम्रता से नेतृत्व करने का अवसर देता है।"},
+  present:{en:"Right now, your focus is on establishing your independent identity—professionally and personally. This is a phase of proving your capability to yourself, not to others.",hi:"इस समय आपका ध्यान व्यावसायिक और व्यक्तिगत रूप से अपनी स्वतंत्र पहचान स्थापित करने पर है। यह चरण दूसरों को नहीं बल्कि स्वयं को अपनी क्षमता सिद्ध करने का है।"},
+  future:{en:"The path ahead rewards patience alongside ambition. Sustainable success will come once ego is balanced with collaboration.",hi:"आगे का मार्ग महत्वाकांक्षा के साथ धैर्य को पुरस्कृत करता है। स्थायी सफलता तभी मिलेगी जब अहंकार को सहयोग के साथ संतुलित किया जाए।"},
+  remedy:{en:"Wear gold or copper, worship Surya (Sun) at sunrise, chant 'Om Suryaya Namah', and donate wheat or jaggery on Sundays.",hi:"सोना या तांबा धारण करें, सूर्योदय के समय सूर्य की उपासना करें, 'ॐ सूर्याय नमः' का जाप करें, और रविवार को गेहूं या गुड़ का दान करें।"}},
+2:{color:{en:'White, Silver',hi:'सफेद, चांदी'},day:{en:'Monday',hi:'सोमवार'},gem:{en:'Pearl / Moonstone',hi:'मोती / चंद्रमणि'},
+  personality:{en:"Sensitive, intuitive, and diplomatic, you read emotions instinctively and prefer harmony over confrontation.",hi:"संवेदनशील, सहज-ज्ञानी और कूटनीतिक, आप भावनाओं को स्वाभाविक रूप से समझते हैं और टकराव के बजाय सामंजस्य पसंद करते हैं।"},
+  career:{en:"You excel in counseling, hospitality, healthcare, arts, and any collaborative or people-facing role rather than solo command.",hi:"आप परामर्श, आतिथ्य, स्वास्थ्य सेवा, कला और किसी भी सहयोगात्मक क्षेत्र में उत्कृष्टता प्राप्त करते हैं।"},
+  relationships:{en:"Deeply emotional in love, you need reassurance and gentleness; mismatched or harsh partners drain you quickly.",hi:"प्रेम में गहराई से भावुक, आपको आश्वासन और कोमलता चाहिए; असंगत या कठोर साथी आपको शीघ्र थका देते हैं।"},
+  health:{en:"Watch for mood-linked issues—digestion, hormonal balance, and sleep are sensitive to emotional stress.",hi:"मनोदशा से जुड़ी समस्याओं पर ध्यान दें—पाचन, हार्मोनल संतुलन और नींद भावनात्मक तनाव के प्रति संवेदनशील हैं।"},
+  finance:{en:"Income grows steadily through partnerships and patience rather than sudden risk; avoid emotional spending.",hi:"आय अचानक जोखिम के बजाय साझेदारी और धैर्य से स्थिर रूप से बढ़ती है; भावनात्मक खर्च से बचें।"},
+  pastLife:{en:"Number 2 often carries karma tied to service and caregiving in past lives—this life asks you to also receive care, not just give it.",hi:"अंक 2 प्रायः पूर्वजन्म में सेवा और देखभाल से जुड़ा कर्म लाता है—यह जीवन आपसे केवल देना नहीं, ग्रहण करना भी सीखने को कहता है।"},
+  present:{en:"You're currently navigating emotional recalibration—learning where to give trust and where to protect your peace.",hi:"आप वर्तमान में भावनात्मक पुनर्संतुलन से गुजर रहे हैं—यह सीखते हुए कि विश्वास कहाँ करें और अपनी शांति की रक्षा कहाँ करें।"},
+  future:{en:"Ahead lies stability built through patient relationship-building rather than solo ambition.",hi:"आगे स्थिरता है जो अकेली महत्वाकांक्षा के बजाय धैर्यपूर्ण संबंध-निर्माण से बनेगी।"},
+  remedy:{en:"Wear silver or pearl, worship the Moon on Mondays, chant 'Om Chandraya Namah', and keep white flowers or milk offerings.",hi:"चांदी या मोती धारण करें, सोमवार को चंद्रमा की उपासना करें, 'ॐ चंद्राय नमः' का जाप करें, और सफेद फूल या दूध अर्पित करें।"}},
+3:{color:{en:'Yellow',hi:'पीला'},day:{en:'Thursday',hi:'गुरुवार'},gem:{en:'Yellow Sapphire',hi:'पुखराज'},
+  personality:{en:"Wise, expressive, and optimistic, you're drawn to knowledge, teaching, and sharing ideas with warmth.",hi:"बुद्धिमान, अभिव्यंजक और आशावादी, आप ज्ञान, शिक्षण और विचारों को स्नेहपूर्वक साझा करने की ओर आकर्षित होते हैं।"},
+  career:{en:"Teaching, writing, law, consulting, and public speaking suit you—fields where wisdom and communication matter.",hi:"शिक्षण, लेखन, कानून, परामर्श और सार्वजनिक भाषण आपके लिए उपयुक्त हैं।"},
+  relationships:{en:"You bring humor and generosity to relationships but need a partner who values growth and honest conversation.",hi:"आप रिश्तों में हास्य और उदारता लाते हैं परंतु आपको ऐसा साथी चाहिए जो विकास और ईमानदार बातचीत को महत्व दे।"},
+  health:{en:"Liver, weight, and blood-sugar balance need attention, especially with overindulgence.",hi:"यकृत, वजन और रक्त-शर्करा संतुलन पर ध्यान आवश्यक है, विशेषकर अति-भोग की स्थिति में।"},
+  finance:{en:"Wealth grows through knowledge-based work and ethical dealings; Jupiter rewards generosity with abundance.",hi:"धन ज्ञान-आधारित कार्य और नैतिक व्यवहार से बढ़ता है; बृहस्पति उदारता को समृद्धि से पुरस्कृत करता है।"},
+  pastLife:{en:"Number 3 often carries karma as a teacher or guide in past lives—this life continues that role, formally or informally.",hi:"अंक 3 प्रायः पूर्वजन्म में शिक्षक या मार्गदर्शक होने का कर्म लाता है—यह जीवन उस भूमिका को जारी रखता है।"},
+  present:{en:"You're currently expanding your knowledge and influence, often being sought out for advice.",hi:"आप वर्तमान में अपने ज्ञान और प्रभाव का विस्तार कर रहे हैं, प्रायः सलाह के लिए खोजे जाते हैं।"},
+  future:{en:"Ahead lies recognition through mentorship, publishing, or guiding others—your wisdom becomes your legacy.",hi:"आगे मार्गदर्शन या लेखन के माध्यम से पहचान मिलेगी—आपका ज्ञान ही आपकी विरासत बनेगा।"},
+  remedy:{en:"Wear yellow, worship on Thursdays, chant 'Om Gurave Namah', and donate turmeric, books, or yellow items.",hi:"पीला वस्त्र धारण करें, गुरुवार को उपासना करें, 'ॐ गुरवे नमः' का जाप करें, और हल्दी, पुस्तकें या पीली वस्तुएं दान करें।"}},
+4:{color:{en:'Grey, Blue',hi:'धूसर, नीला'},day:{en:'Saturday',hi:'शनिवार'},gem:{en:'Hessonite (Gomed)',hi:'गोमेद'},
+  personality:{en:"Practical, disciplined, and unconventional, you often see solutions others miss and aren't afraid to break tradition.",hi:"व्यावहारिक, अनुशासित और अपरंपरागत, आप प्रायः वे समाधान देखते हैं जो अन्य नहीं देख पाते।"},
+  career:{en:"Technology, research, unconventional business models, and crisis-management roles suit your restless, structured mind.",hi:"प्रौद्योगिकी, अनुसंधान, अपरंपरागत व्यवसाय मॉडल और संकट-प्रबंधन भूमिकाएँ आपके अनुकूल हैं।"},
+  relationships:{en:"You need a partner who accepts your independence and occasional unpredictability without demanding constant explanation.",hi:"आपको ऐसा साथी चाहिए जो आपकी स्वतंत्रता और अप्रत्याशितता को बिना निरंतर स्पष्टीकरण मांगे स्वीकार करे।"},
+  health:{en:"Nervous tension, anxiety, and irregular routines can affect sleep and digestion—stability helps more than you'd expect.",hi:"तंत्रिका तनाव, चिंता और अनियमित दिनचर्या नींद और पाचन को प्रभावित कर सकती है।"},
+  finance:{en:"Income can be irregular but often surprisingly large through unconventional ventures; avoid shortcuts that compromise ethics.",hi:"आय अनियमित हो सकती है परंतु अपरंपरागत उद्यमों से आश्चर्यजनक रूप से बड़ी हो सकती है।"},
+  pastLife:{en:"Number 4 often carries unfinished ambition from past lives—a hunger that this life channels into disciplined achievement.",hi:"अंक 4 प्रायः पूर्वजन्म की अधूरी महत्वाकांक्षा लाता है—एक भूख जिसे यह जीवन अनुशासित उपलब्धि में बदलता है।"},
+  present:{en:"You're currently building structure around what once felt chaotic—organizing ambition into a workable plan.",hi:"आप वर्तमान में उस अराजकता को संरचना दे रहे हैं जो कभी अव्यवस्थित लगती थी।"},
+  future:{en:"Ahead lies unconventional success once you learn to work within realistic boundaries rather than against them.",hi:"आगे अपरंपरागत सफलता है, जब आप वास्तविक सीमाओं के भीतर कार्य करना सीख जाते हैं।"},
+  remedy:{en:"Wear grey or blue, keep Saturdays for grounding practices, chant 'Om Rahave Namah', and avoid impulsive major decisions that day.",hi:"धूसर या नीला वस्त्र धारण करें, शनिवार को स्थिरता के अभ्यास के लिए रखें, 'ॐ राहवे नमः' का जाप करें।"}},
+5:{color:{en:'Green',hi:'हरा'},day:{en:'Wednesday',hi:'बुधवार'},gem:{en:'Emerald',hi:'पन्ना'},
+  personality:{en:"Quick-witted, adaptable, and communicative, you thrive on change and get restless with routine.",hi:"तीव्र-बुद्धि, अनुकूलनशील और संवादप्रिय, आप परिवर्तन में फलते-फूलते हैं और दिनचर्या से बेचैन हो जाते हैं।"},
+  career:{en:"Business, media, sales, writing, travel-related work, and anything involving variety suits your versatile mind.",hi:"व्यापार, मीडिया, बिक्री, लेखन, यात्रा-संबंधी कार्य आपके बहुमुखी मन के अनुकूल हैं।"},
+  relationships:{en:"You need freedom and mental stimulation in relationships; possessiveness from a partner feels suffocating.",hi:"आपको रिश्तों में स्वतंत्रता और मानसिक उत्तेजना चाहिए; साथी की अधिकारिता आपको घुटन महसूस कराती है।"},
+  health:{en:"Nervous system, skin, and respiratory sensitivity need attention, especially under mental overstimulation.",hi:"तंत्रिका तंत्र, त्वचा और श्वसन संवेदनशीलता पर ध्यान आवश्यक है।"},
+  finance:{en:"Money moves fast for you—multiple income streams suit you better than one fixed source.",hi:"आपके लिए धन तेजी से चलता है—एक निश्चित स्रोत की बजाय कई आय स्रोत बेहतर हैं।"},
+  pastLife:{en:"Number 5 often carries karma of restlessness or unfinished exploration—this life invites completion through focus, not more scattering.",hi:"अंक 5 प्रायः बेचैनी या अधूरी खोज का कर्म लाता है—यह जीवन एकाग्रता से पूर्णता का निमंत्रण देता है।"},
+  present:{en:"You're currently juggling multiple interests or opportunities, testing which ones deserve real commitment.",hi:"आप वर्तमान में कई रुचियों या अवसरों को संभाल रहे हैं, यह परखते हुए कि कौन-सा वास्तविक प्रतिबद्धता के योग्य है।"},
+  future:{en:"Ahead lies success through versatility once channeled—mastering a few things deeply rather than dabbling endlessly.",hi:"आगे बहुमुखी प्रतिभा को सही दिशा में लगाने से सफलता मिलेगी।"},
+  remedy:{en:"Wear green, worship on Wednesdays, chant 'Om Budhaya Namah', and keep routines that include variety without total chaos.",hi:"हरा वस्त्र धारण करें, बुधवार को उपासना करें, 'ॐ बुधाय नमः' का जाप करें।"}},
+6:{color:{en:'White / Pastels',hi:'सफेद / हल्के रंग'},day:{en:'Friday',hi:'शुक्रवार'},gem:{en:'Diamond / White Sapphire',hi:'हीरा / सफेद पुखराज'},
+  personality:{en:"Loving, artistic, and harmony-seeking, you have a natural eye for beauty and a deep need for meaningful connection.",hi:"प्रेमपूर्ण, कलात्मक और सामंजस्य-प्रिय, आपमें सौंदर्य के लिए स्वाभाविक दृष्टि है।"},
+  career:{en:"Design, arts, fashion, hospitality, counseling, and beauty-related fields let your aesthetic and nurturing sense shine.",hi:"डिज़ाइन, कला, फैशन, आतिथ्य और परामर्श आपकी सौंदर्यात्मक भावना को प्रकट करते हैं।"},
+  relationships:{en:"Relationships are central to your happiness; you give deeply but must guard against losing yourself in a partner's needs.",hi:"रिश्ते आपकी खुशी के केंद्र में हैं; आप गहराई से देते हैं परंतु स्वयं को खोने से बचना चाहिए।"},
+  health:{en:"Kidneys, reproductive health, and throat need care, along with balanced indulgence in comfort and pleasure.",hi:"गुर्दे, प्रजनन स्वास्थ्य और गले पर ध्यान आवश्यक है।"},
+  finance:{en:"Money flows through creativity, beauty, or relationship-based work; luxury spending needs conscious limits.",hi:"धन रचनात्मकता या संबंध-आधारित कार्य से प्राप्त होता है; विलासितापूर्ण खर्च पर सीमा आवश्यक है।"},
+  pastLife:{en:"Number 6 often carries karma of sacrifice for others in past lives—this life asks for balanced giving, not self-erasure.",hi:"अंक 6 प्रायः पूर्वजन्म में दूसरों के लिए त्याग का कर्म लाता है—यह जीवन संतुलित देने की मांग करता है।"},
+  present:{en:"You're currently balancing responsibility to others with your own needs—learning healthy boundaries in love and duty.",hi:"आप वर्तमान में दूसरों के प्रति उत्तरदायित्व और अपनी आवश्यकताओं में संतुलन बना रहे हैं।"},
+  future:{en:"Ahead lies fulfillment through relationships and creative work built on mutual respect, not one-sided sacrifice.",hi:"आगे रिश्तों और रचनात्मक कार्य से पूर्णता मिलेगी, जो परस्पर सम्मान पर आधारित होगी।"},
+  remedy:{en:"Wear white or pastel shades, worship on Fridays, chant 'Om Shukraya Namah', and keep fragrant flowers or perfume as offerings.",hi:"सफेद या हल्के रंग धारण करें, शुक्रवार को उपासना करें, 'ॐ शुक्राय नमः' का जाप करें।"}},
+7:{color:{en:'Grey, Brown',hi:'धूसर, भूरा'},day:{en:'Tuesday',hi:'मंगलवार'},gem:{en:"Cat's Eye",hi:'लहसुनिया'},
+  personality:{en:"Spiritual, analytical, and introspective, you're drawn to deeper truths and often feel different from those around you.",hi:"आध्यात्मिक, विश्लेषणात्मक और आत्मनिरीक्षक, आप गहरे सत्य की ओर आकर्षित होते हैं।"},
+  career:{en:"Research, spirituality, psychology, occult sciences, and specialized technical fields suit your investigative mind.",hi:"अनुसंधान, आध्यात्मिकता, मनोविज्ञान और विशेष तकनीकी क्षेत्र आपके अनुकूल हैं।"},
+  relationships:{en:"You need solitude within relationships; a partner who respects your need for space and depth over small talk suits you best.",hi:"आपको रिश्तों में एकांत चाहिए; ऐसा साथी जो आपकी स्थान और गहराई की आवश्यकता का सम्मान करे।"},
+  health:{en:"Nervous exhaustion and overthinking can affect sleep and digestion—time in nature or meditation restores you.",hi:"तंत्रिका थकान और अति-चिंतन नींद और पाचन को प्रभावित कर सकते हैं।"},
+  finance:{en:"Wealth often comes later in life or through specialized knowledge rather than conventional paths.",hi:"धन प्रायः जीवन में बाद में या विशेष ज्ञान के माध्यम से आता है।"},
+  pastLife:{en:"Number 7 often carries karma of a seeker or ascetic in past lives—this life continues the inward search, now grounded in the material world.",hi:"अंक 7 प्रायः पूर्वजन्म में साधक होने का कर्म लाता है—यह जीवन उस आंतरिक खोज को जारी रखता है।"},
+  present:{en:"You're currently in a phase of questioning and inner searching, even if outwardly things look settled.",hi:"आप वर्तमान में प्रश्न और आंतरिक खोज के चरण में हैं, भले ही बाहरी रूप से सब कुछ स्थिर दिखे।"},
+  future:{en:"Ahead lies wisdom-based success and recognition, often arriving quietly rather than dramatically.",hi:"आगे ज्ञान-आधारित सफलता और पहचान है, जो प्रायः शांति से आती है।"},
+  remedy:{en:"Wear grey or brown, spend time in quiet reflection on Tuesdays, chant 'Om Ketave Namah', and avoid excessive materialism as a coping mechanism.",hi:"धूसर या भूरा वस्त्र धारण करें, मंगलवार को शांत चिंतन में समय बिताएं, 'ॐ केतवे नमः' का जाप करें।"}},
+8:{color:{en:'Dark Blue, Black',hi:'गहरा नीला, काला'},day:{en:'Saturday',hi:'शनिवार'},gem:{en:'Blue Sapphire',hi:'नीलम'},
+  personality:{en:"Hardworking, disciplined, and karmic, you carry weighty responsibilities and often achieve success the slow, hard way.",hi:"परिश्रमी, अनुशासित और कर्मशील, आप भारी उत्तरदायित्व वहन करते हैं।"},
+  career:{en:"Law, finance, administration, real estate, and large-scale management suit your capacity for structure and endurance.",hi:"कानून, वित्त, प्रशासन, अचल संपत्ति और बड़े पैमाने का प्रबंधन आपके अनुकूल हैं।"},
+  relationships:{en:"You take relationships seriously and expect loyalty; emotional walls can form if trust has been broken before.",hi:"आप रिश्तों को गंभीरता से लेते हैं और निष्ठा की अपेक्षा करते हैं।"},
+  health:{en:"Bones, joints, and chronic stress-related conditions need attention—rest is not optional for you, it's essential.",hi:"हड्डियाँ, जोड़ और दीर्घकालिक तनाव-संबंधी स्थितियों पर ध्यान आवश्यक है।"},
+  finance:{en:"Wealth builds slowly but solidly, often peaking later in life through sustained, disciplined effort.",hi:"धन धीरे-धीरे परंतु मजबूती से बढ़ता है, प्रायः जीवन में बाद में शिखर पर पहुँचता है।"},
+  pastLife:{en:"Number 8 often carries unresolved karmic debt from past lives—this life is about clearing old patterns through hard-earned integrity.",hi:"अंक 8 प्रायः पूर्वजन्म से अनसुलझा कर्म-ऋण लाता है—यह जीवन पुराने पैटर्न को साफ करने के बारे में है।"},
+  present:{en:"You're currently in a testing phase—delays or obstacles are shaping your resilience rather than punishing you.",hi:"आप वर्तमान में परीक्षा के चरण में हैं—विलंब या बाधाएं आपकी सहनशक्ति गढ़ रही हैं।"},
+  future:{en:"Ahead lies significant, lasting success once patience outlasts the difficulty—Saturn rewards those who don't give up.",hi:"आगे महत्वपूर्ण, स्थायी सफलता है जब धैर्य कठिनाई से आगे निकल जाता है।"},
+  remedy:{en:"Wear dark blue or black, worship on Saturdays, chant 'Om Shanaischaraya Namah', and serve the underprivileged or donate black sesame/mustard oil.",hi:"गहरा नीला या काला वस्त्र धारण करें, शनिवार को उपासना करें, 'ॐ शनैश्चराय नमः' का जाप करें।"}},
+9:{color:{en:'Red',hi:'लाल'},day:{en:'Tuesday',hi:'मंगलवार'},gem:{en:'Red Coral',hi:'मूंगा'},
+  personality:{en:"Bold, energetic, and humanitarian, you have a fighter's spirit and a deep pull toward causes bigger than yourself.",hi:"साहसी, ऊर्जावान और परोपकारी, आपमें एक योद्धा की भावना है।"},
+  career:{en:"Defense, sports, surgery, engineering, activism, and any high-energy or mission-driven field suit your courage.",hi:"रक्षा, खेल, शल्य चिकित्सा, इंजीनियरिंग और सक्रियता आपके साहस के अनुकूल हैं।"},
+  relationships:{en:"You love intensely and protectively; learning patience and gentleness prevents conflicts from escalating unnecessarily.",hi:"आप तीव्रता और सुरक्षात्मक भाव से प्रेम करते हैं; धैर्य और कोमलता सीखना संघर्ष को बढ़ने से रोकता है।"},
+  health:{en:"Blood pressure, inflammation, and injuries from impulsiveness need attention—channel excess energy through regular physical activity.",hi:"रक्तचाप, सूजन और आवेगपूर्णता से उत्पन्न चोटों पर ध्यान आवश्यक है।"},
+  finance:{en:"Money comes through bold action and courage, but impulsive decisions can undo gains just as fast.",hi:"धन साहसिक कार्य और साहस से आता है, परंतु आवेगपूर्ण निर्णय उतनी ही तेजी से लाभ को समाप्त कर सकते हैं।"},
+  pastLife:{en:"Number 9 often carries karma of a warrior or protector in past lives—this life channels that fire toward service rather than conflict.",hi:"अंक 9 प्रायः पूर्वजन्म में योद्धा होने का कर्म लाता है—यह जीवन उस अग्नि को सेवा की ओर मोड़ता है।"},
+  present:{en:"You're currently channeling intense energy into a cause, project, or fight worth having—make sure it's the right battle.",hi:"आप वर्तमान में किसी सार्थक उद्देश्य या संघर्ष में तीव्र ऊर्जा लगा रहे हैं—सुनिश्चित करें कि यह सही लड़ाई हो।"},
+  future:{en:"Ahead lies fulfillment through humanitarian impact once raw energy matures into purposeful action.",hi:"आगे परोपकारी प्रभाव के माध्यम से पूर्णता है, जब कच्ची ऊर्जा उद्देश्यपूर्ण कार्य में परिपक्व हो जाती है।"},
+  remedy:{en:"Wear red, worship on Tuesdays, chant 'Om Mangalaya Namah', and donate red lentils or support causes that protect the vulnerable.",hi:"लाल वस्त्र धारण करें, मंगलवार को उपासना करें, 'ॐ मंगलाय नमः' का जाप करें।"}}
+};
+
+/* ---------- COMPOUND NUMBER MEANINGS (birth date 1-31) ---------- */
+const COMPOUND = {
+1:{en:"A number of new beginnings and independent will.",hi:"नई शुरुआत और स्वतंत्र इच्छाशक्ति का अंक।"},
+2:{en:"A number of sensitivity, balance, and partnership.",hi:"संवेदनशीलता, संतुलन और साझेदारी का अंक।"},
+3:{en:"A number of creativity, expression, and joy.",hi:"रचनात्मकता, अभिव्यक्ति और आनंद का अंक।"},
+4:{en:"A number of hard work, structure, and steady building.",hi:"परिश्रम, संरचना और स्थिर निर्माण का अंक।"},
+5:{en:"A number of freedom, change, and adaptability.",hi:"स्वतंत्रता, परिवर्तन और अनुकूलनशीलता का अंक।"},
+6:{en:"A number of responsibility, love, and harmony.",hi:"उत्तरदायित्व, प्रेम और सामंजस्य का अंक।"},
+7:{en:"A number of introspection, wisdom, and spiritual depth.",hi:"आत्मनिरीक्षण, ज्ञान और आध्यात्मिक गहराई का अंक।"},
+8:{en:"A number of ambition, power, and material mastery.",hi:"महत्वाकांक्षा, शक्ति और भौतिक निपुणता का अंक।"},
+9:{en:"A number of compassion, completion, and universal service.",hi:"करुणा, पूर्णता और सार्वभौमिक सेवा का अंक।"},
+10:{en:"Symbolizes a cycle completing and a fresh, more empowered start.",hi:"एक चक्र की पूर्णता और अधिक सशक्त नई शुरुआत का प्रतीक।"},
+11:{en:"A highly intuitive, sensitive vibration often linked to spiritual insight.",hi:"अत्यंत सहज-ज्ञानी स्पंदन जो प्रायः आध्यात्मिक अंतर्दृष्टि से जुड़ा है।"},
+12:{en:"Suggests sacrifice for a larger goal, followed by eventual reward.",hi:"बड़े लक्ष्य के लिए त्याग और अंततः पुरस्कार का संकेत देता है।"},
+13:{en:"Often misunderstood as unlucky—actually signals transformation through effort.",hi:"प्रायः अशुभ समझा जाता है—वास्तव में परिश्रम के माध्यम से रूपांतरण का संकेत देता है।"},
+14:{en:"A number of movement, risk, and lessons learned through change.",hi:"गति, जोखिम और परिवर्तन के माध्यम से सीखे गए पाठों का अंक।"},
+15:{en:"Blends magnetism and responsibility—strong pull toward family and comfort.",hi:"आकर्षण और उत्तरदायित्व का मिश्रण—परिवार और आराम की ओर प्रबल खिंचाव।"},
+16:{en:"Warns of sudden upheaval followed by rebuilding on firmer ground.",hi:"अचानक उथल-पुथल की चेतावनी, जिसके बाद अधिक मजबूत आधार पर पुनर्निर्माण होता है।"},
+17:{en:"A favorable number of spiritual and material success combined.",hi:"आध्यात्मिक और भौतिक सफलता के संयोजन का शुभ अंक।"},
+18:{en:"Suggests inner conflict between material desire and higher purpose.",hi:"भौतिक इच्छा और उच्च उद्देश्य के बीच आंतरिक संघर्ष का संकेत देता है।"},
+19:{en:"A strong number of self-reliance and eventual victory after struggle.",hi:"आत्मनिर्भरता और संघर्ष के बाद अंतिम विजय का सशक्त अंक।"},
+20:{en:"Symbolizes partnerships, awakening, and heightened sensitivity.",hi:"साझेदारी, जागृति और बढ़ी हुई संवेदनशीलता का प्रतीक।"},
+21:{en:"A favorable number of growth, honors, and rising position.",hi:"विकास, सम्मान और उन्नत पद का शुभ अंक।"},
+22:{en:"The 'master builder'—huge potential for large-scale achievement if disciplined.",hi:"'मास्टर बिल्डर'—अनुशासन होने पर बड़े पैमाने की उपलब्धि की विशाल क्षमता।"},
+23:{en:"A highly favorable number of support, protection, and success through effort.",hi:"सहायता, सुरक्षा और परिश्रम से सफलता का अत्यंत शुभ अंक।"},
+24:{en:"Brings support from others and success through cooperation.",hi:"दूसरों से सहायता और सहयोग के माध्यम से सफलता लाता है।"},
+25:{en:"A number of learning through experience, analysis, and reflection.",hi:"अनुभव, विश्लेषण और चिंतन के माध्यम से सीखने का अंक।"},
+26:{en:"Warns against partnerships built on poor judgment; caution with money and trust.",hi:"खराब निर्णय पर आधारित साझेदारियों के प्रति चेतावनी; धन और विश्वास में सावधानी।"},
+27:{en:"A number of authority earned through wisdom and inner strength.",hi:"ज्ञान और आंतरिक शक्ति से अर्जित अधिकार का अंक।"},
+28:{en:"Mixes gain and loss—success requires guarding against overconfidence.",hi:"लाभ और हानि का मिश्रण—सफलता के लिए अति-आत्मविश्वास से बचना आवश्यक है।"},
+29:{en:"An intense number of emotional tests, hidden support, and eventual strength.",hi:"भावनात्मक परीक्षाओं, छिपी सहायता और अंततः शक्ति का तीव्र अंक।"},
+30:{en:"A creative, thoughtful number that rewards depth over speed.",hi:"रचनात्मक, विचारशील अंक जो गति के बजाय गहराई को पुरस्कृत करता है।"},
+31:{en:"Similar energy to 4 but with more independence—steady achievement through solo effort.",hi:"अंक 4 के समान ऊर्जा परंतु अधिक स्वतंत्रता के साथ—एकल प्रयास से स्थिर उपलब्धि।"}
+};
+
+const PLANES = [
+ {en:'Mental Plane',hi:'मानसिक तल', nums:[4,9,2]},
+ {en:'Emotional Plane',hi:'भावनात्मक तल', nums:[3,5,7]},
+ {en:'Practical Plane',hi:'व्यावहारिक तल', nums:[8,1,6]},
+ {en:'Thought Plane',hi:'विचार तल', nums:[4,3,8]},
+ {en:'Will Plane',hi:'इच्छा तल', nums:[9,5,1]},
+ {en:'Action Plane',hi:'क्रिया तल', nums:[2,7,6]},
+ {en:'Determination Plane',hi:'दृढ़ संकल्प तल', nums:[4,5,6]},
+ {en:'Compassion Plane',hi:'करुणा तल', nums:[2,5,8]}
+];
+
+const LBL = {
+  reportTitle:{en:'Vedic Numerology Report',hi:'वैदिक अंक ज्योतिष रिपोर्ट'},
+  dob:{en:'Date of Birth',hi:'जन्म तिथि'},
+  coreNumbers:{en:'Core Numbers',hi:'मुख्य अंक'},
+  mulank:{en:'Mulank (Root Number)',hi:'मूलांक (जन्म अंक)'},
+  bhagyank:{en:'Bhagyank (Destiny Number)',hi:'भाग्यांक (भाग्य अंक)'},
+  namank:{en:'Namank (Name Number)',hi:'नामांक (नाम अंक)'},
+  kua:{en:'Kua Number',hi:'क्यूआ अंक'},
+  personalYear:{en:'Personal Year',hi:'व्यक्तिगत वर्ष'},
+  ruledBy:{en:'Ruled by',hi:'स्वामी ग्रह'},
+  personality:{en:'Personality',hi:'व्यक्तित्व'},
+  career:{en:'Career',hi:'करियर'},
+  relationships:{en:'Relationships',hi:'रिश्ते'},
+  health:{en:'Health',hi:'स्वास्थ्य'},
+  finance:{en:'Finance',hi:'धन'},
+  remedy:{en:'Remedy & Mantra',hi:'उपाय एवं मंत्र'},
+  luckyColor:{en:'Lucky Color',hi:'शुभ रंग'},
+  luckyDay:{en:'Lucky Day',hi:'शुभ दिन'},
+  gemstone:{en:'Gemstone',hi:'रत्न'},
+  lifePathTitle:{en:'Bhagyank — Life Path: Past, Present & Future',hi:'भाग्यांक — जीवन पथ: भूत, वर्तमान और भविष्य'},
+  past:{en:'Past-Life Pattern',hi:'पूर्वजन्म की प्रवृत्ति'},
+  present:{en:'Present Focus',hi:'वर्तमान केंद्र बिंदु'},
+  future:{en:'Future Path',hi:'भविष्य का मार्ग'},
+  namankTitle:{en:'Namank — Your Social Image',hi:'नामांक — आपकी सामाजिक छवि'},
+  namankNote:{en:"This is how the world perceives you through your name's vibration.",hi:'यह वह छवि है जो आपके नाम के स्पंदन से संसार आपको देखता है।'},
+  compoundTitle:{en:'Compound Number of Your Birth Date',hi:'आपकी जन्म तिथि का संयुक्त अंक'},
+  compatTitle:{en:'Mulank–Bhagyank Compatibility',hi:'मूलांक–भाग्यांक अनुकूलता'},
+  friendly:{en:'Friendly Numbers',hi:'मित्र अंक'},
+  neutral:{en:'Neutral Numbers',hi:'सम अंक'},
+  challenging:{en:'Challenging Numbers',hi:'चुनौतीपूर्ण अंक'},
+  loshuTitle:{en:'Lo Shu Grid',hi:'लो शू ग्रिड'},
+  missing:{en:'Missing Numbers',hi:'अनुपस्थित अंक'},
+  planesTitle:{en:'Grid Planes',hi:'ग्रिड तल'},
+  complete:{en:'Complete',hi:'पूर्ण'},
+  incomplete:{en:'Incomplete',hi:'अपूर्ण'},
+  yearTitle:{en:"This Year's Forecast",hi:'इस वर्ष का पूर्वानुमान'},
+  disclaimer:{en:'This report follows classical Vedic and Chaldean numerology traditions and is intended for self-reflection and guidance.',hi:'यह रिपोर्ट पारंपरिक वैदिक और कैल्डियन अंक ज्योतिष पर आधारित है तथा आत्मचिंतन एवं मार्गदर्शन हेतु है।'},
+  hindiVersion:{en:'',hi:'हिंदी संस्करण'},
+  preparedFor:{en:'Prepared exclusively for',hi:'विशेष रूप से तैयार किया गया'},
+  tocTitle:{en:'Contents',hi:'विषय-सूची'},
+  toc1:{en:'Core Numbers',hi:'मुख्य अंक'},
+  toc2:{en:'Mulank Profile',hi:'मूलांक विवरण'},
+  toc3:{en:'Life Path (Past/Present/Future)',hi:'जीवन पथ (भूत/वर्तमान/भविष्य)'},
+  toc4:{en:'Name Analysis & Corrections',hi:'नाम विश्लेषण एवं सुधार'},
+  toc5:{en:'Compatibility',hi:'अनुकूलता'},
+  toc6:{en:'Lo Shu Grid & Missing Number Lessons',hi:'लो शू ग्रिड एवं अनुपस्थित अंक पाठ'},
+  toc7:{en:'5-Year Forecast & Favorable Dates',hi:'5-वर्षीय पूर्वानुमान एवं शुभ तिथियाँ'},
+  gridDistribution:{en:'Digit Distribution',hi:'अंक वितरण'},
+  missingLessonsTitle:{en:'What Your Missing Numbers Are Teaching You',hi:'आपके अनुपस्थित अंक आपको क्या सिखा रहे हैं'},
+  forecastTitle:{en:'5-Year Forecast',hi:'5-वर्षीय पूर्वानुमान'},
+  favDatesTitle:{en:'Favorable Dates for New Beginnings',hi:'नई शुरुआत के लिए शुभ तिथियाँ'},
+  favDatesNote:{en:'These dates (any month) carry energy aligned with your Mulank — good for starting new work, signing agreements, or important decisions.',hi:'ये तिथियाँ (किसी भी माह में) आपके मूलांक के अनुरूप ऊर्जा रखती हैं—नया कार्य आरंभ करने, अनुबंध करने या महत्वपूर्ण निर्णयों के लिए शुभ।'},
+  nameSuggestTitle:{en:'Name Correction Suggestions',hi:'नाम सुधार सुझाव'},
+  nameSuggestNote:{en:"Adding an initial can shift your name's vibration toward a more favorable number. These are illustrative starting points — a professional numerologist can refine the exact spelling further.",hi:'एक आद्याक्षर जोड़ने से आपके नाम का स्पंदन अधिक अनुकूल अंक की ओर स्थानांतरित हो सकता है। ये उदाहरणस्वरूप सुझाव हैं—एक पेशेवर अंक ज्योतिषी सटीक वर्तनी को और परिष्कृत कर सकते हैं।'},
+  noSuggestions:{en:'Your current name already resonates with a favorable number — no correction needed.',hi:'आपका वर्तमान नाम पहले से ही एक अनुकूल अंक के साथ प्रतिध्वनित होता है—किसी सुधार की आवश्यकता नहीं।'},
+  partnerTitle:{en:'Partner Compatibility',hi:'साथी अनुकूलता'},
+  overallScore:{en:'Overall Compatibility Score',hi:'समग्र अनुकूलता स्कोर'},
+  mulankMatch:{en:'Mulank-to-Mulank',hi:'मूलांक से मूलांक'},
+  bhagyankMatch:{en:'Bhagyank-to-Bhagyank',hi:'भाग्यांक से भाग्यांक'},
+  partnerNote:{en:'This is a lighthearted self-reflection tool, not a substitute for a full compatibility (Kundali) matching by a professional astrologer.',hi:'यह एक हल्का आत्मचिंतन उपकरण है, किसी पेशेवर ज्योतिषी द्वारा पूर्ण कुंडली मिलान का विकल्प नहीं है।'}
+};
+
+function harmonyRelation(mul, bhag){
+  if(mul === bhag) return 'same';
+  const fr = friendNumbers(mul);
+  if(fr.friends.includes(bhag)) return 'friend';
+  if(fr.enemies.includes(bhag)) return 'enemy';
+  return 'neutral';
+}
+const HARMONY_TEXT = {
+  same:{en:"Your Mulank and Bhagyank are the same number, which means your inner personality and life destiny are perfectly aligned—what you naturally are is exactly what life is asking you to become.",
+        hi:"आपका मूलांक और भाग्यांक समान अंक है, जिसका अर्थ है कि आपका आंतरिक व्यक्तित्व और जीवन का भाग्य पूर्णतः संरेखित हैं।"},
+  friend:{en:"Your Mulank and Bhagyank are ruled by friendly planetary energies. This creates natural ease between who you are and where life is guiding you—your personal growth and destiny support each other.",
+        hi:"आपका मूलांक और भाग्यांक मित्र ग्रहों द्वारा शासित हैं। इससे आपके स्वभाव और जीवन की दिशा के बीच स्वाभाविक तालमेल बनता है।"},
+  neutral:{en:"Your Mulank and Bhagyank carry neutral planetary energies toward each other—neither strong conflict nor strong support. Conscious effort helps align your personality with your destiny.",
+        hi:"आपका मूलांक और भाग्यांक एक-दूसरे के प्रति तटस्थ ऊर्जा रखते हैं—न अधिक संघर्ष, न अधिक सहयोग। सचेत प्रयास आपके व्यक्तित्व को भाग्य के साथ संरेखित करने में सहायक है।"},
+  enemy:{en:"Your Mulank and Bhagyank are ruled by planetary energies that classically stand in tension. This often shows up as an inner pull between who you naturally are and what circumstances demand—awareness of this tension is itself the remedy.",
+        hi:"आपका मूलांक और भाग्यांक ऐसे ग्रहों द्वारा शासित हैं जो परंपरागत रूप से परस्पर तनाव में हैं। यह प्रायः आपके स्वभाव और परिस्थितियों की मांग के बीच आंतरिक खिंचाव के रूप में दिखता है।"}
+};
+
+const MISSING_LESSON = {
+1:{en:"Absence of 1 often shows as self-doubt or hesitation to lead — building confidence through small independent decisions strengthens this missing energy.",hi:"अंक 1 की अनुपस्थिति प्रायः आत्म-संदेह या नेतृत्व में झिझक के रूप में दिखती है—छोटे स्वतंत्र निर्णयों से आत्मविश्वास बनाना सहायक है।"},
+2:{en:"Absence of 2 can mean difficulty trusting others or being emotionally guarded — practicing patience in relationships builds this missing energy.",hi:"अंक 2 की अनुपस्थिति दूसरों पर भरोसा करने में कठिनाई दिखा सकती है—रिश्तों में धैर्य का अभ्यास इस अनुपस्थित ऊर्जा को बनाता है।"},
+3:{en:"Absence of 3 often shows as difficulty expressing feelings or creativity — journaling or creative hobbies help develop this energy.",hi:"अंक 3 की अनुपस्थिति प्रायः भावनाओं या रचनात्मकता को व्यक्त करने में कठिनाई दिखाती है—डायरी लेखन या रचनात्मक शौक सहायक हैं।"},
+4:{en:"Absence of 4 can mean resistance to routine and discipline — consciously building small daily systems strengthens this missing energy.",hi:"अंक 4 की अनुपस्थिति दिनचर्या और अनुशासन के प्रति प्रतिरोध दिखा सकती है—छोटी दैनिक प्रणालियाँ बनाना सहायक है।"},
+5:{en:"Absence of 5 often shows as fear of change or being stuck in comfort zones — deliberately trying new experiences builds this energy.",hi:"अंक 5 की अनुपस्थिति परिवर्तन के भय या सहज क्षेत्र में फंसे रहने के रूप में दिखती है—नए अनुभव आजमाना सहायक है।"},
+6:{en:"Absence of 6 can mean difficulty with domestic responsibility or emotional commitment — nurturing close relationships consciously helps.",hi:"अंक 6 की अनुपस्थिति घरेलू उत्तरदायित्व या भावनात्मक प्रतिबद्धता में कठिनाई दिखा सकती है—घनिष्ठ रिश्तों का सचेत पोषण सहायक है।"},
+7:{en:"Absence of 7 often shows as restlessness or difficulty with solitude and self-reflection — regular quiet time builds this missing depth.",hi:"अंक 7 की अनुपस्थिति बेचैनी या एकांत और आत्मचिंतन में कठिनाई दिखाती है—नियमित शांत समय सहायक है।"},
+8:{en:"Absence of 8 can mean discomfort with authority, money management, or ambition — consciously setting long-term financial goals helps.",hi:"अंक 8 की अनुपस्थिति अधिकार, धन-प्रबंधन या महत्वाकांक्षा में असहजता दिखा सकती है—दीर्घकालिक वित्तीय लक्ष्य निर्धारित करना सहायक है।"},
+9:{en:"Absence of 9 often shows as difficulty letting go or being less drawn to service beyond oneself — volunteering or acts of generosity build this energy.",hi:"अंक 9 की अनुपस्थिति त्यागने में कठिनाई या स्वयं से परे सेवा के प्रति कम रुझान दिखाती है—स्वयंसेवा या उदारता के कार्य सहायक हैं।"}
+};
+
+const YEAR_THEME = {
+1:{en:"Independence, new initiatives, and bold starts.",hi:"स्वतंत्रता, नई पहलों और साहसिक शुरुआत का समय।"},
+2:{en:"Patience, partnerships, and emotional balance.",hi:"धैर्य, साझेदारी और भावनात्मक संतुलन का समय।"},
+3:{en:"Growth, creativity, and social expansion.",hi:"विकास, रचनात्मकता और सामाजिक विस्तार का समय।"},
+4:{en:"Hard work, discipline, and laying foundations.",hi:"परिश्रम, अनुशासन और नींव रखने का समय।"},
+5:{en:"Change, travel, and unexpected opportunities.",hi:"परिवर्तन, यात्रा और अप्रत्याशित अवसरों का समय।"},
+6:{en:"Family, responsibility, and relationship focus.",hi:"परिवार, उत्तरदायित्व और रिश्तों पर ध्यान का समय।"},
+7:{en:"Introspection, learning, and inner growth.",hi:"आत्मनिरीक्षण, अध्ययन और आंतरिक विकास का समय।"},
+8:{en:"Career gains, authority, and financial focus.",hi:"करियर लाभ, अधिकार और वित्तीय ध्यान का समय।"},
+9:{en:"Completion, letting go, and humanitarian focus.",hi:"पूर्णता, त्याग और परोपकारी कार्यों का समय।"}
+};
+
+/* ---------- NAME CORRECTION SUGGESTIONS ---------- */
+function suggestNameCorrections(name, favorableList){
+  const results = []; const seen = new Set();
+  for(let code=65; code<=90 && results.length<3; code++){
+    const letter = String.fromCharCode(code);
+    const candidate = `${name} ${letter}`;
+    const num = namank(candidate);
+    if(favorableList.includes(num) && !seen.has(num)){
+      seen.add(num);
+      results.push({candidate, num});
+    }
+  }
+  return results;
+}
+
+/* ---------- FAVORABLE DATES FOR NEW BEGINNINGS ---------- */
+function favorableDates(mulNum){
+  const friends = [...friendNumbers(mulNum).friends, mulNum];
+  const dates = [];
+  for(let d=1; d<=31; d++){ if(friends.includes(reduceNum(d))) dates.push(d); }
+  return dates;
+}
+
+/* ---------- PARTNER COMPATIBILITY ---------- */
+function computePartnerCompatibility(myMul, myBhag, pName, pDobVal){
+  const [py, pm, pd] = pDobVal.split('-').map(Number);
+  const pMul = mulank(pd);
+  const pBhag = bhagyank(pd, pm, py);
+  const rel1 = harmonyRelation(myMul, pMul);
+  const rel2 = harmonyRelation(myBhag, pBhag);
+  const score = { same:9, friend:8, neutral:6, enemy:4 };
+  const overall = Math.round((score[rel1] + score[rel2]) / 2);
+  return { pName, pDobVal, pMul, pBhag, rel1, rel2, overall };
+}
+
+/* ---------- NAME NUMBER CHECKER (standalone tool) ---------- */
+function checkNameNumber(){
+  const name = document.getElementById('checkName').value.trim();
+  const box = document.getElementById('nameCheckResult');
+  if(!name){ box.style.display='none'; return; }
+  const num = namank(name);
+  const t = TRAITS[num];
+  box.innerHTML = `<strong>${name}</strong> → Namank <strong>${num}</strong> (Ruled by ${PLANET_OF[num]})<br>${t.personality.en}`;
+  box.style.display = 'block';
+}
+
+/* ---------- REPORT BUILDING ---------- */
+function generateReport(){
+  const name = document.getElementById('fullName').value.trim();
+  const dobVal = document.getElementById('dob').value;
+  const gender = document.getElementById('gender').value;
+  const lang = document.getElementById('lang').value;
+  if(!name || !dobVal){ alert('Please enter both name and date of birth.'); return; }
+
+  const [year, month, day] = dobVal.split('-').map(Number);
+  const currentYear = new Date().getFullYear();
+
+  const mul = mulank(day);
+  const bhag = bhagyank(day, month, year);
+  const nam = namank(name);
+  const namRaw = namankRaw(name);
+  const kua = kuaNumber(year, gender);
+  const pYear = personalYear(day, month, currentYear);
+  const grid = loshuGrid(day, month, year);
+  const missing = Object.keys(grid).filter(k=>grid[k]===0);
+  const fr = friendNumbers(mul);
+  const harmony = harmonyRelation(mul, bhag);
+  const compoundKey = day <= 31 ? day : reduceNum(day);
+  const namCompoundKey = namRaw <= 31 ? namRaw : null;
+  const nameSuggestions = suggestNameCorrections(name, fr.friends);
+  const favDates = favorableDates(mul);
+
+  let partner = null;
+  const includePartner = document.getElementById('includePartner').checked;
+  if(includePartner){
+    const pName = document.getElementById('partnerName').value.trim();
+    const pDobVal = document.getElementById('partnerDob').value;
+    if(pName && pDobVal){ partner = computePartnerCompatibility(mul, bhag, pName, pDobVal); }
+  }
+
+  currentReport = { name, dobVal, day, month, year, gender, mul, bhag, nam, namRaw, kua, pYear, grid, missing, fr, harmony, compoundKey, namCompoundKey, currentYear, lang, nameSuggestions, favDates, partner };
+
+  const area = document.getElementById('reportPrintArea');
+  if(lang === 'both'){
+    area.innerHTML =
+      `<div class="lang-tag">English</div>` + buildSectionsHTML(currentReport,'en') +
+      `<hr class="section-divider">` +
+      `<div class="lang-tag">हिंदी</div>` + buildSectionsHTML(currentReport,'hi');
+  } else {
+    area.innerHTML = buildSectionsHTML(currentReport, lang);
+  }
+
+  document.getElementById('reportCard').classList.remove('hidden');
+  document.getElementById('pdfBtnWrap').classList.remove('hidden');
+  document.getElementById('formCard').classList.add('hidden');
+}
+
+function buildSectionsHTML(r, L){
+  const t = TRAITS[r.mul];
+  const tb = TRAITS[r.bhag];
+  const tn = TRAITS[r.nam];
+  const loshuOrder = [4,9,2,3,5,7,8,1,6];
+  const compound = COMPOUND[r.compoundKey] || {en:'',hi:''};
+  const namCompound = r.namCompoundKey ? COMPOUND[r.namCompoundKey] : null;
+  const planes = PLANES.map(p => ({...p, complete: p.nums.every(n=>r.grid[n]>0)}));
+  const maxCount = Math.max(1, ...Object.values(r.grid));
+
+  return `
+    <div class="cover">
+      <div class="om">🕉</div>
+      <div class="brand">Numerolytics Pro</div>
+      <div class="sub">${LBL.reportTitle[L]}</div>
+      <div class="preparedFor">${LBL.preparedFor[L]}: <strong>${r.name}</strong></div>
+      <div class="genDate">${new Date().toLocaleDateString('en-IN')}</div>
+    </div>
+
+    <div class="toc">
+      <strong>${LBL.tocTitle[L]}</strong>
+      <ol>
+        <li>${LBL.toc1[L]}</li><li>${LBL.toc2[L]}</li><li>${LBL.toc3[L]}</li>
+        <li>${LBL.toc4[L]}</li><li>${LBL.toc5[L]}</li><li>${LBL.toc6[L]}</li><li>${LBL.toc7[L]}</li>
+      </ol>
+    </div>
+
+    <p class="desc"><strong>${L==='hi'?'नाम':'Name'}:</strong> ${r.name}<br>
+    <strong>${LBL.dob[L]}:</strong> ${r.dobVal}</p>
+
+    <h2>${LBL.coreNumbers[L]}</h2>
+    <div class="num-grid">
+      <div class="num-box"><div class="val">${r.mul}</div><div class="lbl">${LBL.mulank[L]}</div></div>
+      <div class="num-box"><div class="val">${r.bhag}</div><div class="lbl">${LBL.bhagyank[L]}</div></div>
+      <div class="num-box"><div class="val">${r.nam}</div><div class="lbl">${LBL.namank[L]}</div></div>
+      <div class="num-box"><div class="val">${r.kua}</div><div class="lbl">${LBL.kua[L]}</div></div>
+    </div>
+
+    <h2>${LBL.mulank[L]} ${r.mul} — ${LBL.ruledBy[L]} ${L==='hi'?PLANET_HI[PLANET_OF[r.mul]]:PLANET_OF[r.mul]}</h2>
+    <h3>${LBL.personality[L]}</h3><p class="desc">${t.personality[L]}</p>
+    <h3>${LBL.career[L]}</h3><p class="desc">${t.career[L]}</p>
+    <h3>${LBL.relationships[L]}</h3><p class="desc">${t.relationships[L]}</p>
+    <h3>${LBL.health[L]}</h3><p class="desc">${t.health[L]}</p>
+    <h3>${LBL.finance[L]}</h3><p class="desc">${t.finance[L]}</p>
+    <h3>${LBL.remedy[L]}</h3>
+    <table>
+      <tr><td><strong>${LBL.luckyColor[L]}</strong></td><td>${t.color[L]}</td></tr>
+      <tr><td><strong>${LBL.luckyDay[L]}</strong></td><td>${t.day[L]}</td></tr>
+      <tr><td><strong>${LBL.gemstone[L]}</strong></td><td>${t.gem[L]}</td></tr>
+    </table>
+    <p class="desc">${t.remedy[L]}</p>
+
+    <h2>${LBL.lifePathTitle[L]}</h2>
+    <h3>${LBL.past[L]}</h3><p class="desc">${tb.pastLife[L]}</p>
+    <h3>${LBL.present[L]}</h3><p class="desc">${tb.present[L]}</p>
+    <h3>${LBL.future[L]}</h3><p class="desc">${tb.future[L]}</p>
+
+    <h2>${LBL.namankTitle[L]}</h2>
+    <p class="desc">${LBL.namankNote[L]}</p>
+    <p class="desc">${tn.personality[L]}</p>
+    ${namCompound ? `<p class="desc"><strong>${L==='hi'?'नाम अंक (मूल योग '+r.namRaw+')':'Name Total (raw sum '+r.namRaw+')'}:</strong> ${namCompound[L]}</p>` : ''}
+
+    <h3>${LBL.nameSuggestTitle[L]}</h3>
+    ${r.fr.friends.includes(r.nam) ?
+      `<p class="desc">${LBL.noSuggestions[L]}</p>` :
+      `<p class="desc">${LBL.nameSuggestNote[L]}</p>
+       <table>${r.nameSuggestions.map(s=>`<tr><td>${s.candidate}</td><td>${L==='hi'?'नामांक':'Namank'} ${s.num}</td></tr>`).join('') || `<tr><td colspan="2">—</td></tr>`}</table>`
+    }
+
+    <h2>${LBL.compoundTitle[L]}</h2>
+    <p class="desc"><strong>${r.day}:</strong> ${compound[L]}</p>
+
+    <h2>${LBL.compatTitle[L]}</h2>
+    <p class="desc">${HARMONY_TEXT[r.harmony][L]}</p>
+    <table>
+      <tr><td><strong>${LBL.friendly[L]}</strong></td><td>${r.fr.friends.join(', ')}</td></tr>
+      <tr><td><strong>${LBL.neutral[L]}</strong></td><td>${r.fr.neutral.join(', ') || '—'}</td></tr>
+      <tr><td><strong>${LBL.challenging[L]}</strong></td><td>${r.fr.enemies.join(', ') || '—'}</td></tr>
+    </table>
+
+    <h2>${LBL.loshuTitle[L]}</h2>
+    <div class="loshu">
+      ${loshuOrder.map(n => `<div>${r.grid[n] > 0 ? String(n).repeat(r.grid[n]) : ''}</div>`).join('')}
+    </div>
+    <p class="desc"><strong>${LBL.missing[L]}:</strong> ${r.missing.length ? r.missing.join(', ') : (L==='hi'?'कोई नहीं — संतुलित ग्रिड':'None — a well-balanced grid')}</p>
+
+    <h3>${LBL.gridDistribution[L]}</h3>
+    <div class="barchart">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`<div class="bar-col"><div class="bar" style="height:${(r.grid[n]/maxCount*90)+4}px"></div><div class="bar-label">${n}</div></div>`).join('')}
+    </div>
+
+    <h3>${LBL.planesTitle[L]}</h3>
+    <table>
+      ${planes.map(p=>`<tr><td>${p[L]}</td><td>${p.complete ? LBL.complete[L] : LBL.incomplete[L]}</td></tr>`).join('')}
+    </table>
+
+    ${r.missing.length ? `
+    <h3>${LBL.missingLessonsTitle[L]}</h3>
+    <table>
+      ${r.missing.map(n=>`<tr><td><strong>${n}</strong></td><td>${MISSING_LESSON[n][L]}</td></tr>`).join('')}
+    </table>` : ''}
+
+    <h2>${LBL.forecastTitle[L]}</h2>
+    <table>
+      <tr><th>${L==='hi'?'वर्ष':'Year'}</th><th>${L==='hi'?'व्यक्तिगत वर्ष अंक':'Personal Year'}</th><th>${L==='hi'?'विषय':'Theme'}</th></tr>
+      ${[0,1,2,3,4].map(i=>{
+        const yr = r.currentYear + i;
+        const py = personalYear(r.day, r.month, yr);
+        return `<tr><td>${yr}</td><td>${py}</td><td>${YEAR_THEME[py][L]}</td></tr>`;
+      }).join('')}
+    </table>
+
+    <h3>${LBL.favDatesTitle[L]}</h3>
+    <p class="desc">${LBL.favDatesNote[L]}</p>
+    <p class="desc"><strong>${r.favDates.join(', ')}</strong></p>
+
+    ${r.partner ? `
+    <h2>${LBL.partnerTitle[L]}</h2>
+    <p class="desc">${L==='hi'?'साथी':'Partner'}: <strong>${r.partner.pName}</strong> (${r.partner.pDobVal})</p>
+    <table>
+      <tr><td><strong>${LBL.mulankMatch[L]}</strong></td><td>${r.mul} ↔ ${r.partner.pMul} — ${HARMONY_TEXT[r.partner.rel1][L]}</td></tr>
+      <tr><td><strong>${LBL.bhagyankMatch[L]}</strong></td><td>${r.bhag} ↔ ${r.partner.pBhag} — ${HARMONY_TEXT[r.partner.rel2][L]}</td></tr>
+      <tr><td><strong>${LBL.overallScore[L]}</strong></td><td>${r.partner.overall} / 10</td></tr>
+    </table>
+    <p class="desc" style="font-size:.8rem;">${LBL.partnerNote[L]}</p>
+    ` : ''}
+
+    <p class="desc" style="font-size:.75rem;color:#8a7a50;margin-top:20px;">${LBL.disclaimer[L]}</p>
+  `;
+}
+
+function newReport(){
+  document.getElementById('reportCard').classList.add('hidden');
+  document.getElementById('pdfBtnWrap').classList.add('hidden');
+  document.getElementById('formCard').classList.remove('hidden');
+}
+
+/* ---------- PDF EXPORT (renders actual DOM -> supports Hindi correctly) ---------- */
+function downloadPDF(){
+  if(!currentReport){ alert('Generate a report first.'); return; }
+  const element = document.getElementById('reportPrintArea');
+  const loading = document.getElementById('pdfLoading');
+  loading.style.display = 'block';
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'pt', 'a4');
+
+  doc.html(element, {
+    callback: function(doc){
+      const pageCount = doc.internal.getNumberOfPages();
+      for(let i=1; i<=pageCount; i++){
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(140,130,100);
+        doc.text('Numerolytics.in', 20, 835);
+        doc.text(`Page ${i} of ${pageCount}`, 535, 835, { align: 'right' });
+      }
+      loading.style.display = 'none';
+      doc.save(`${currentReport.name.replace(/\s+/g,'_')}_Numerology_Report.pdf`);
+    },
+    x: 20, y: 20,
+    width: 555,
+    windowWidth: 800,
+    autoPaging: 'text',
+    html2canvas: { scale: 0.75, useCORS: true }
+  });
+}
+</script>
+</body>
+</html>
